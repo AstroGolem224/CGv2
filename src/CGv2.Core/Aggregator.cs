@@ -4,9 +4,10 @@ public static class Aggregator
 {
     public static List<DayRow> Build(
         IEnumerable<RawEvent> events,
+        DateOnly from,
+        DateOnly to,
         DateOnly today,
         DateTime now,
-        int days,
         TimeOnly windowStart,
         TimeOnly windowEnd,
         DateOnly? lockDataSince)
@@ -14,9 +15,8 @@ public static class Aggregator
         var all = events.ToList();
         var rows = new List<DayRow>();
 
-        for (int i = 0; i < days; i++)
+        for (var date = to; date >= from; date = date.AddDays(-1))
         {
-            var date = today.AddDays(-i);
             var dayEvents = all.Where(e => DateOnly.FromDateTime(e.TimestampLocal) == date).ToList();
 
             var boots = dayEvents.Where(e => e.Kind == EventKind.Boot)

@@ -9,6 +9,8 @@ public sealed class MainForm : Form
 {
     private readonly WebView2 _web = new() { Dock = DockStyle.Fill };
     private readonly Store _store;
+    private DateOnly _to = DateOnly.FromDateTime(DateTime.Now);
+    private DateOnly _from = DateOnly.FromDateTime(DateTime.Now).AddDays(-9);
 
     public MainForm(Store store)
     {
@@ -31,6 +33,7 @@ public sealed class MainForm : Form
             {
                 var msg = e.TryGetWebMessageAsString();
                 if (msg == "export") ExportCsv();
+                else if (msg != null && msg.StartsWith("range:")) ApplyRange(msg);
                 else Render();
             };
             Render();
@@ -49,32 +52,56 @@ public sealed class MainForm : Form
 
     private void OpenInBrowser()
     {
-        var html = LoadTemplate()
-            .Replace("/*__DATA__*/[]", JsonSerializer.Serialize(BuildRows().Select(WebRow.From)));
         var path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "cgv2-report.html");
-        File.WriteAllText(path, html, new UTF8Encoding(true));
+        File.WriteAllText(path, BuildHtml(), new UTF8Encoding(true));
         System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(path) { UseShellExecute = true });
+    }
+
+    private void ApplyRange(string msg)
+    {
+        var parts = msg.Split(':');
+        if (parts.Length == 3
+            && DateOnly.TryParseExact(parts[1], "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var f)
+            && DateOnly.TryParseExact(parts[2], "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var t))
+        {
+            if (f > t) (f, t) = (t, f);
+            var today = DateOnly.FromDateTime(DateTime.Now);
+            if (t > today) t = today;
+            if (t.DayNumber - f.DayNumber > 366) f = t.AddDays(-366);
+            _from = f;
+            _to = t;
+        }
+        Render();
     }
 
     private List<DayRow> BuildRows()
     {
+        var today = DateOnly.FromDateTime(DateTime.Now);
+        int daysBack = Math.Max(1, today.DayNumber - _from.DayNumber + 1);
         var locks = _store.Load();
-        var boot = EventLogSource.ReadBootShutdown(10);
+        var boot = EventLogSource.ReadBootShutdown(daysBack);
         return Aggregator.Build(
             locks.Concat(boot),
-            DateOnly.FromDateTime(DateTime.Now),
-            DateTime.Now,
-            10,
+            _from, _to, today, DateTime.Now,
             new TimeOnly(11, 0), new TimeOnly(13, 0),
             _store.FirstLockDate());
     }
 
-    private void Render()
+    private string BuildHtml()
     {
-        var json = JsonSerializer.Serialize(BuildRows().Select(WebRow.From));
-        var html = LoadTemplate().Replace("/*__DATA__*/[]", json);
-        _web.NavigateToString(html);
+        var data = JsonSerializer.Serialize(BuildRows().Select(WebRow.From));
+        var range = JsonSerializer.Serialize(new
+        {
+            from = _from.ToString("yyyy-MM-dd"),
+            to = _to.ToString("yyyy-MM-dd"),
+            today = DateOnly.FromDateTime(DateTime.Now).ToString("yyyy-MM-dd")
+        });
+        return LoadTemplate()
+            .Replace("/*__DATA__*/[]", data)
+            .Replace("/*__RANGE__*/null", range);
     }
+
+    private void Render() => _web.NavigateToString(BuildHtml());
 
     private void ExportCsv()
     {

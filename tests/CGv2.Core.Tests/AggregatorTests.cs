@@ -10,7 +10,7 @@ public class AggregatorTests
     static RawEvent Ev(EventKind k, int h, int m) => new(k, Day.ToDateTime(new TimeOnly(h, m)));
     static DayRow Today(System.Collections.Generic.IEnumerable<RawEvent> es,
                         DateOnly? since = null, DateTime? now = null)
-        => Aggregator.Build(es, Day, now ?? Now, 1, W1, W2, since ?? Day)[0];
+        => Aggregator.Build(es, Day, Day, Day, now ?? Now, W1, W2, since ?? Day)[0];
 
     [Fact]
     public void BootAndShutdown_SetsOnOff()
@@ -122,10 +122,38 @@ public class AggregatorTests
     [Fact]
     public void Build_ReturnsNewestFirst_AndRequestedCount()
     {
-        var rows = Aggregator.Build(System.Array.Empty<RawEvent>(), Day, Now, 10, W1, W2, Day);
+        var rows = Aggregator.Build(System.Array.Empty<RawEvent>(), Day.AddDays(-9), Day, Day, Now, W1, W2, Day);
         Assert.Equal(10, rows.Count);
         Assert.Equal(Day, rows[0].Date);
         Assert.Equal(Day.AddDays(-9), rows[9].Date);
+    }
+
+    [Fact]
+    public void Build_ArbitraryRange_NotEndingToday()
+    {
+        var from = new DateOnly(2026, 6, 1);
+        var to = new DateOnly(2026, 6, 5);
+        var rows = Aggregator.Build(System.Array.Empty<RawEvent>(), from, to, Day, Now, W1, W2, Day);
+        Assert.Equal(5, rows.Count);
+        Assert.Equal(to, rows[0].Date);          // newest first
+        Assert.Equal(from, rows[4].Date);
+        Assert.All(rows, r => Assert.False(r.Running));   // none is today
+    }
+
+    [Fact]
+    public void Build_RangeIncludingToday_MarksTodayRunning()
+    {
+        var rows = Aggregator.Build(new[] { Ev(EventKind.Boot, 8, 0) },
+            Day.AddDays(-2), Day, Day, Now, W1, W2, Day);
+        Assert.Equal(3, rows.Count);
+        Assert.True(rows[0].Running);            // rows[0] is today
+    }
+
+    [Fact]
+    public void Build_FromAfterTo_Empty()
+    {
+        var rows = Aggregator.Build(System.Array.Empty<RawEvent>(), Day, Day.AddDays(-1), Day, Now, W1, W2, Day);
+        Assert.Empty(rows);
     }
 
     [Fact]

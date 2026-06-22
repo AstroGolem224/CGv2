@@ -17,9 +17,9 @@ body{margin:0;background:#0E1116;font-family:'IBM Plex Mono',ui-monospace,monosp
 .cg-h1{font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:18px;margin:0}
 .cg-sub{font-size:11px;color:#7c8694;margin-top:3px}
 .cg-acts{display:flex;gap:8px}
-.cg-btn{display:inline-flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#cdd3db;background:#161B22;border:1px solid #2a323d;border-radius:8px;padding:7px 11px;cursor:pointer}
-.cg-btn.amber{color:#0E1116;background:#F4A23C;border-color:#F4A23C;font-weight:500}
-.cg-btn:active{transform:scale(.98)}
+.cg-range{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.cg-rlabel{font-size:12px;color:#7c8694}
+.cg-date{color-scheme:dark;background:#161B22;color:#E6E9EE;border:1px solid #2a323d;border-radius:8px;padding:6px 9px;font-family:'IBM Plex Mono',monospace;font-size:12px}
 .cg-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
 .cg-metric{background:#12161C;border:1px solid #1f262f;border-radius:8px;padding:9px 11px}
 .cg-metric .l{font-size:11px;color:#7c8694}
@@ -31,8 +31,8 @@ body{margin:0;background:#0E1116;font-family:'IBM Plex Mono',ui-monospace,monosp
 .cg-scale span{position:absolute;top:0;font-size:11px;color:#5b6573;transform:translateX(-50%)}
 .cg-row{padding:10px 0;border-bottom:1px solid #161c23}
 .cg-row.dim{opacity:.62}
-.cg-date b{font-family:'Bricolage Grotesque',sans-serif;font-weight:500;font-size:14px}
-.cg-date span{font-size:11px;color:#7c8694;margin-right:5px}
+.cg-date-cell b{font-family:'Bricolage Grotesque',sans-serif;font-weight:500;font-size:14px}
+.cg-date-cell span{font-size:11px;color:#7c8694;margin-right:5px}
 .cg-time{font-size:13px;display:flex;align-items:center;gap:6px}
 .cg-pip{width:7px;height:7px;border-radius:50%;flex:none}
 .cg-work{font-size:13px;color:#5BD08A}
@@ -54,7 +54,7 @@ body{margin:0;background:#0E1116;font-family:'IBM Plex Mono',ui-monospace,monosp
   <div class="cg-body">
    <div class="cg-head">
     <div>
-     <p class="cg-h1">Letzte 10 Tage</p>
+     <p class="cg-h1" id="cg-title">Letzte 10 Tage</p>
      <p class="cg-sub"><i class="ti ti-circle-filled" style="font-size:8px;color:#5BD08A;vertical-align:1px"></i> Lock-Mitschnitt aktiv seit 18.06.2026 · Daten in lock-log.json (auto-save)</p>
     </div>
     <div class="cg-acts">
@@ -63,10 +63,17 @@ body{margin:0;background:#0E1116;font-family:'IBM Plex Mono',ui-monospace,monosp
      <button class="cg-btn amber" id="cg-copyall"><i class="ti ti-copy"></i> Kopieren (TSV)</button>
     </div>
    </div>
+   <div class="cg-range">
+    <span class="cg-rlabel">Zeitraum</span>
+    <input type="date" id="cg-from" class="cg-date">
+    <span class="cg-rlabel">bis</span>
+    <input type="date" id="cg-to" class="cg-date">
+    <button class="cg-btn" id="cg-apply"><i class="ti ti-check"></i> Anwenden</button>
+   </div>
    <div class="cg-metrics">
-    <div class="cg-metric"><div class="l">Ø Arbeitszeit / Tag</div><div class="v"><b>8,5</b> h</div></div>
-    <div class="cg-metric"><div class="l">Ø Pause 11–13 h</div><div class="v">33 min</div></div>
-    <div class="cg-metric"><div class="l">Tage mit Lock-Daten</div><div class="v">5 / 10</div></div>
+    <div class="cg-metric"><div class="l">Ø Arbeitszeit / Tag</div><div class="v"><b id="m-work">–</b> h</div></div>
+    <div class="cg-metric"><div class="l">Ø Pause 11–13 h</div><div class="v" id="m-pause">– min</div></div>
+    <div class="cg-metric"><div class="l">Tage mit Lock-Daten</div><div class="v" id="m-days">– / –</div></div>
    </div>
    <div class="cg-grid">
     <div class="cg-colh">Datum</div>
@@ -89,6 +96,7 @@ body{margin:0;background:#0E1116;font-family:'IBM Plex Mono',ui-monospace,monosp
 </div>
 <script>
 const D=/*__DATA__*/[];
+const RANGE=/*__RANGE__*/null;
 function timeCell(v,color){
  if(v===null||v==="aus")return '<div class="cg-time cg-muted">'+(v==="aus"?"aus":"—")+'</div>';
  if(v==="läuft")return '<div class="cg-time" style="color:#F4A23C">läuft</div>';
@@ -107,7 +115,7 @@ function track(r){
 }
 document.getElementById('cg-rows').innerHTML=D.map((r,i)=>(
  '<div class="cg-grid cg-row'+(r.data?'':' dim')+'">'+
- '<div class="cg-date"><span>'+r.wd+'</span><b>'+r.d+'</b></div>'+
+ '<div class="cg-date-cell"><span>'+r.wd+'</span><b>'+r.d+'</b></div>'+
  timeCell(r.on,'#5BD08A')+
  timeCell(r.off==="läuft"?"läuft":(r.off||"aus"),'#E2685A')+
  workCell(r)+
@@ -142,5 +150,26 @@ document.getElementById('cg-export').addEventListener('click',()=>{
  const blob=new Blob(["﻿"+csv()],{type:"text/csv;charset=utf-8"});
  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download="cgv2-arbeitszeiten.csv";a.click();
 });
+if(RANGE){
+ const fi=document.getElementById('cg-from'),ti=document.getElementById('cg-to');
+ fi.value=RANGE.from;ti.value=RANGE.to;
+ if(RANGE.today){fi.max=RANGE.today;ti.max=RANGE.today;}
+ const fmt=s=>{const p=s.split('-');return p[2]+'.'+p[1]+'.'};
+ document.getElementById('cg-title').textContent=fmt(RANGE.from)+' – '+fmt(RANGE.to)+RANGE.to.split('-')[0];
+}
+document.getElementById('cg-apply').addEventListener('click',()=>{
+ const f=document.getElementById('cg-from').value,t=document.getElementById('cg-to').value;
+ if(f&&t&&window.chrome&&window.chrome.webview)window.chrome.webview.postMessage('range:'+f+':'+t);
+});
+(function(){
+ const dataRows=D.filter(r=>r.data&&!r.pcoff);
+ const workVals=dataRows.map(r=>r.work?parseFloat(r.work.replace(',','.')):null).filter(v=>v!=null);
+ const avgW=workVals.length?workVals.reduce((a,b)=>a+b,0)/workVals.length:null;
+ const pauseVals=dataRows.map(r=>parseInt(r.sum,10)).filter(v=>!isNaN(v));
+ const avgP=pauseVals.length?Math.round(pauseVals.reduce((a,b)=>a+b,0)/pauseVals.length):null;
+ document.getElementById('m-work').textContent=avgW!=null?avgW.toFixed(1).replace('.',','):'–';
+ document.getElementById('m-pause').textContent=(avgP!=null?avgP:'–')+' min';
+ document.getElementById('m-days').textContent=D.filter(r=>r.data).length+' / '+D.length;
+})();
 </script>
 </body></html>
