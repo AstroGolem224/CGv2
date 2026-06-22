@@ -24,14 +24,36 @@ public sealed class MainForm : Form
 
     private async Task InitAsync()
     {
-        await _web.EnsureCoreWebView2Async();
-        _web.CoreWebView2.WebMessageReceived += (_, e) =>
+        try
         {
-            var msg = e.TryGetWebMessageAsString();
-            if (msg == "export") ExportCsv();
-            else Render();
-        };
-        Render();
+            await _web.EnsureCoreWebView2Async();
+            _web.CoreWebView2.WebMessageReceived += (_, e) =>
+            {
+                var msg = e.TryGetWebMessageAsString();
+                if (msg == "export") ExportCsv();
+                else Render();
+            };
+            Render();
+        }
+        catch (Exception ex)
+        {
+            var choice = MessageBox.Show(
+                "Die WebView2-Runtime fehlt vermutlich.\n\n" +
+                "Soll der Report stattdessen im Standardbrowser geöffnet werden?\n\n" +
+                ex.Message,
+                "CGv2", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+            if (choice == DialogResult.Yes) OpenInBrowser();
+            Close();
+        }
+    }
+
+    private void OpenInBrowser()
+    {
+        var html = LoadTemplate()
+            .Replace("/*__DATA__*/[]", JsonSerializer.Serialize(BuildRows().Select(WebRow.From)));
+        var path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "cgv2-report.html");
+        File.WriteAllText(path, html, new UTF8Encoding(true));
+        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(path) { UseShellExecute = true });
     }
 
     private List<DayRow> BuildRows()

@@ -6,6 +6,7 @@ namespace CGv2.App;
 public sealed class Store
 {
     private readonly string _path;
+    private readonly object _gate = new();
     public string Path => _path;
 
     public Store()
@@ -30,20 +31,29 @@ public sealed class Store
     private readonly record struct StoredLock(EventKind Kind, DateTime Ts);
 
     public List<RawEvent> Load()
-        => LoadStored().Select(s => new RawEvent(s.Kind, s.Ts)).ToList();
+    {
+        lock (_gate) return LoadStored().Select(s => new RawEvent(s.Kind, s.Ts)).ToList();
+    }
 
     public DateOnly? FirstLockDate()
     {
-        var all = LoadStored();
-        return all.Count == 0 ? null : DateOnly.FromDateTime(all.Min(s => s.Ts));
+        lock (_gate)
+        {
+            var all = LoadStored();
+            return all.Count == 0 ? null : DateOnly.FromDateTime(all.Min(s => s.Ts));
+        }
     }
 
     public void Append(EventKind kind, DateTime ts)
     {
-        var list = LoadStored();
-        if (list.Any(s => s.Kind == kind && s.Ts == ts)) return;
-        list.Add(new StoredLock(kind, ts));
-        File.WriteAllText(_path, JsonSerializer.Serialize(list));
+        lock (_gate)
+        {
+            var list = LoadStored();
+            if (list.Any(s => s.Kind == kind && s.Ts == ts)) return;
+            list.Add(new StoredLock(kind, ts));
+            try { File.WriteAllText(_path, JsonSerializer.Serialize(list)); }
+            catch { }
+        }
     }
 
     private List<StoredLock> LoadStored()
