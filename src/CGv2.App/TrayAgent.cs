@@ -34,7 +34,7 @@ public sealed class TrayAgent : IDisposable
         _icon.DoubleClick += (_, _) => Show();
     }
 
-    private void Show()
+    public void Show()
     {
         if (_form is null || _form.IsDisposed)
         {

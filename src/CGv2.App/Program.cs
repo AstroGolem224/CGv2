@@ -12,6 +12,7 @@ internal static class Program
         var store = new Store();
         using var logger = new LockLogger(store);
         using var tray = new TrayAgent(store);
+        tray.Show();
         Application.Run();
     }
 }
