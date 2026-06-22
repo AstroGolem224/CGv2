@@ -54,7 +54,7 @@ public static class Aggregator
     {
         if (!hasLockData || boots.Count == 0) return null;
         DateTime start = boots[0];
-        DateTime? end = off.HasValue ? date.ToDateTime(off.Value) : (running ? now : null);
+        DateTime? end = running ? now : (off.HasValue ? date.ToDateTime(off.Value) : null);
         if (end is null || end <= start) return null;
 
         double uptime = (end.Value - start).TotalMinutes;

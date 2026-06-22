@@ -181,4 +181,15 @@ public class AggregatorTests
             Ev(EventKind.Lock, 8, 0), Ev(EventKind.Unlock, 9, 0) });
         Assert.Equal(0, r.WorkMinutes);     // lock clipped to uptime, 30-30
     }
+
+    [Fact]
+    public void Work_RunningAfterEarlierShutdown_UsesNow()
+    {
+        var now = Day.ToDateTime(new TimeOnly(14, 0));
+        var r = Today(new[] {
+            Ev(EventKind.Boot, 8, 0), Ev(EventKind.Shutdown, 9, 0),
+            Ev(EventKind.Boot, 10, 0) }, now: now);
+        Assert.True(r.Running);
+        Assert.Equal(360, r.WorkMinutes);   // 08:00 -> now(14:00) = 360
+    }
 }
