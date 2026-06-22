@@ -13,6 +13,7 @@ public sealed record DayRow(
     bool Running,
     bool PcOff,
     bool HasLockData,
-    IReadOnlyList<LockInterval> WindowLocks,
-    int WindowMinutes,
-    int? WorkMinutes);
+    IReadOnlyList<LockInterval> DayLocks,   // lock/pause intervals clipped to [On, BarEnd]
+    int PauseMinutes,                       // total locked minutes across the whole uptime
+    int? WorkMinutes,                       // (BarEnd - On) - PauseMinutes; null if no uptime span
+    TimeOnly? BarEnd);                      // effective bar end = Off, or "now" clock if running

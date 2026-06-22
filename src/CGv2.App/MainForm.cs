@@ -83,7 +83,6 @@ public sealed class MainForm : Form
         return Aggregator.Build(
             locks.Concat(boot),
             _from, _to, today, DateTime.Now,
-            new TimeOnly(11, 0), new TimeOnly(13, 0),
             _store.FirstLockDate());
     }
 
