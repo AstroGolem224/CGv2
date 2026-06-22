@@ -1,16 +1,17 @@
 namespace CGv2.App;
 
-static class Program
+internal static class Program
 {
-    /// <summary>
-    ///  The main entry point for the application.
-    /// </summary>
     [STAThread]
     static void Main()
     {
-        // To customize application configuration such as set high DPI settings or default font,
-        // see https://aka.ms/applicationconfiguration.
+        using var mutex = new System.Threading.Mutex(true, "CGv2_SingleInstance_8f3a", out bool isNew);
+        if (!isNew) return;
+
         ApplicationConfiguration.Initialize();
-        Application.Run(new Form1());
-    }    
+        var store = new Store();
+        using var logger = new LockLogger(store);
+        using var tray = new TrayAgent(store);
+        Application.Run();
+    }
 }
