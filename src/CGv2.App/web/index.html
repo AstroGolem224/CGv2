@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CGv2 — Activity Ledger (UI-Mockup)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+body{margin:0;background:#070A0E;display:flex;justify-content:center;padding:32px 16px;font-family:'IBM Plex Mono',ui-monospace,monospace}
+.cg-wrap{width:100%;max-width:780px}
+.cg-win{background:#0E1116;border:1px solid #222932;border-radius:12px;overflow:hidden;color:#E6E9EE}
+.cg-bar{display:flex;align-items:center;gap:10px;height:40px;padding:0 14px;background:#0A0D11;border-bottom:1px solid #1c232c}
+.cg-dot{width:11px;height:11px;border-radius:50%}
+.cg-title{font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:14px;letter-spacing:.2px;margin-left:4px}
+.cg-tag{font-size:11px;color:#7c8694}
+.cg-ctrls{margin-left:auto;display:flex;gap:14px;color:#5b6573;font-size:15px}
+.cg-body{padding:16px 18px 20px}
+.cg-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:14px;gap:12px;flex-wrap:wrap}
+.cg-h1{font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:18px;margin:0}
+.cg-sub{font-size:11px;color:#7c8694;margin-top:3px}
+.cg-acts{display:flex;gap:8px}
+.cg-btn{display:inline-flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#cdd3db;background:#161B22;border:1px solid #2a323d;border-radius:8px;padding:7px 11px;cursor:pointer}
+.cg-btn.amber{color:#0E1116;background:#F4A23C;border-color:#F4A23C;font-weight:500}
+.cg-btn:active{transform:scale(.98)}
+.cg-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.cg-metric{background:#12161C;border:1px solid #1f262f;border-radius:8px;padding:9px 11px}
+.cg-metric .l{font-size:11px;color:#7c8694}
+.cg-metric .v{font-size:16px;color:#E6E9EE;margin-top:2px}
+.cg-metric .v b{color:#5BD08A;font-weight:500}
+.cg-grid{display:grid;grid-template-columns:104px 60px 60px 66px 1fr 52px 30px;align-items:center;gap:4px}
+.cg-colh{font-size:11px;color:#6e7886;padding:0 0 8px;border-bottom:1px solid #1f262f}
+.cg-scale{position:relative;height:12px}
+.cg-scale span{position:absolute;top:0;font-size:11px;color:#5b6573;transform:translateX(-50%)}
+.cg-row{padding:10px 0;border-bottom:1px solid #161c23}
+.cg-row.dim{opacity:.62}
+.cg-date b{font-family:'Bricolage Grotesque',sans-serif;font-weight:500;font-size:14px}
+.cg-date span{font-size:11px;color:#7c8694;margin-right:5px}
+.cg-time{font-size:13px;display:flex;align-items:center;gap:6px}
+.cg-pip{width:7px;height:7px;border-radius:50%;flex:none}
+.cg-work{font-size:13px;color:#5BD08A}
+.cg-muted{color:#586271}
+.cg-track{position:relative;height:22px;background:#0B0E13;border:1px solid #1c232c;border-radius:5px;overflow:hidden;margin-right:12px}
+.cg-track .mid{position:absolute;left:50%;top:0;bottom:0;width:1px;background:#1c232c}
+.cg-blk{position:absolute;top:2px;bottom:2px;background:#F4A23C;border-radius:2px}
+.cg-note{font-size:11px;color:#586271;line-height:22px;padding-left:8px}
+.cg-sum{font-size:13px;text-align:right;padding-right:4px}
+.cg-copy{display:flex;align-items:center;justify-content:center;color:#5b6573;cursor:pointer;font-size:15px}
+.cg-copy:hover{color:#F4A23C}
+.cg-foot{display:flex;gap:18px;flex-wrap:wrap;margin-top:14px;font-size:11px;color:#6e7886}
+.cg-key{display:inline-flex;align-items:center;gap:6px}
+.cg-sw{width:10px;height:10px;border-radius:2px;flex:none}
+</style></head>
+<body>
+<div class="cg-wrap">
+ <div class="cg-win">
+  <div class="cg-bar">
+   <span class="cg-dot" style="background:#E2685A"></span>
+   <span class="cg-dot" style="background:#F4A23C"></span>
+   <span class="cg-dot" style="background:#5BD08A"></span>
+   <span class="cg-title">CGv2</span><span class="cg-tag">· Activity Ledger</span>
+   <span class="cg-ctrls"><i class="ti ti-minus"></i><i class="ti ti-square"></i><i class="ti ti-x"></i></span>
+  </div>
+  <div class="cg-body">
+   <div class="cg-head">
+    <div>
+     <p class="cg-h1">Letzte 10 Tage</p>
+     <p class="cg-sub"><i class="ti ti-circle-filled" style="font-size:8px;color:#5BD08A;vertical-align:1px"></i> Lock-Mitschnitt aktiv seit 18.06.2026 · Daten in lock-log.json (auto-save)</p>
+    </div>
+    <div class="cg-acts">
+     <button class="cg-btn" id="cg-refresh"><i class="ti ti-refresh"></i> Aktualisieren</button>
+     <button class="cg-btn" id="cg-export"><i class="ti ti-download"></i> CSV</button>
+     <button class="cg-btn amber" id="cg-copyall"><i class="ti ti-copy"></i> Kopieren (TSV)</button>
+    </div>
+   </div>
+   <div class="cg-metrics">
+    <div class="cg-metric"><div class="l">Ø Arbeitszeit / Tag</div><div class="v"><b>8,5</b> h</div></div>
+    <div class="cg-metric"><div class="l">Ø Pause 11–13 h</div><div class="v">33 min</div></div>
+    <div class="cg-metric"><div class="l">Tage mit Lock-Daten</div><div class="v">5 / 10</div></div>
+   </div>
+   <div class="cg-grid">
+    <div class="cg-colh">Datum</div>
+    <div class="cg-colh">An</div>
+    <div class="cg-colh">Aus</div>
+    <div class="cg-colh">Arbeit</div>
+    <div class="cg-colh"><div class="cg-scale" style="margin-right:12px"><span style="left:0;transform:none">11</span><span style="left:50%">12</span><span style="left:100%;transform:translateX(-100%)">13 Uhr</span></div></div>
+    <div class="cg-colh" style="text-align:right;padding-right:4px">Min</div>
+    <div class="cg-colh"></div>
+   </div>
+   <div id="cg-rows"></div>
+   <div class="cg-foot">
+    <span class="cg-key"><span class="cg-sw" style="background:#5BD08A"></span>An / Arbeitszeit</span>
+    <span class="cg-key"><span class="cg-sw" style="background:#E2685A"></span>Aus</span>
+    <span class="cg-key"><span class="cg-sw" style="background:#F4A23C"></span>Gesperrt 11–13 h</span>
+    <span class="cg-key"><span class="cg-muted">—</span>&nbsp;keine Lock-Historie</span>
+   </div>
+  </div>
+ </div>
+</div>
+<script>
+const D=/*__DATA__*/[];
+function timeCell(v,color){
+ if(v===null||v==="aus")return '<div class="cg-time cg-muted">'+(v==="aus"?"aus":"—")+'</div>';
+ if(v==="läuft")return '<div class="cg-time" style="color:#F4A23C">läuft</div>';
+ return '<div class="cg-time"><span class="cg-pip" style="background:'+color+'"></span>'+v+'</div>';
+}
+function workCell(r){
+ if(!r.data||r.pcoff||!r.work)return '<div class="cg-work cg-muted">—</div>';
+ return '<div class="cg-work">'+r.work+' <span class="cg-muted" style="font-size:11px">h</span></div>';
+}
+function track(r){
+ if(r.pcoff)return '<div class="cg-track"><div class="cg-note">PC aus</div></div>';
+ if(!r.data)return '<div class="cg-track"><div class="cg-note">keine Mitschnitt-Daten</div></div>';
+ let blks=r.blk.map(b=>'<div class="cg-blk" style="left:'+b[0]+'%;width:'+b[1]+'%" title="'+r.t.join(", ")+'"></div>').join("");
+ let note=r.blk.length?'':'<div class="cg-note">'+(r.note||"")+'</div>';
+ return '<div class="cg-track"><div class="mid"></div>'+blks+note+'</div>';
+}
+document.getElementById('cg-rows').innerHTML=D.map((r,i)=>(
+ '<div class="cg-grid cg-row'+(r.data?'':' dim')+'">'+
+ '<div class="cg-date"><span>'+r.wd+'</span><b>'+r.d+'</b></div>'+
+ timeCell(r.on,'#5BD08A')+
+ timeCell(r.off==="läuft"?"läuft":(r.off||"aus"),'#E2685A')+
+ workCell(r)+
+ track(r)+
+ '<div class="cg-sum">'+(r.data?(r.sum+' <span class="cg-muted" style="font-size:11px">min</span>'):'<span class="cg-muted">—</span>')+'</div>'+
+ '<div class="cg-copy" data-i="'+i+'" title="Zeile kopieren"><i class="ti ti-copy"></i></div>'+
+ '</div>'
+)).join("");
+function tsvRow(r){
+ let locks=r.pcoff?"":(r.data?(r.t&&r.t.length?r.t.join("; "):"00:00"):"");
+ return [r.wd+" "+r.d.replace(/\.$/,''),r.on||"",r.off||"",(r.data&&!r.pcoff&&r.work?r.work:""),locks,(r.data&&!r.pcoff?r.sum:"")].join("\t");
+}
+function csv(){
+ const head=["Datum","An","Aus","Arbeit (h)","Gesperrt 11-13","Minuten"].join(";");
+ const rows=D.map(r=>{let locks=r.pcoff?"":(r.data?(r.t&&r.t.length?r.t.join(" "):"00:00"):"");
+  return [r.wd+" "+r.d.replace(/\.$/,''),r.on||"",r.off||"",(r.data&&!r.pcoff&&r.work?r.work:""),locks,(r.data&&!r.pcoff?r.sum:"")].join(";")});
+ return [head].concat(rows).join("\r\n");
+}
+function copy(txt,el){
+ const done=()=>{const o=el.innerHTML;el.innerHTML='<i class="ti ti-check"></i>';setTimeout(()=>el.innerHTML=o,900)};
+ if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(done,done)}else{done()}
+}
+document.getElementById('cg-rows').addEventListener('click',e=>{const c=e.target.closest('.cg-copy');if(c)copy(tsvRow(D[+c.dataset.i]),c)});
+document.getElementById('cg-copyall').addEventListener('click',e=>{
+ const head="Datum\tAn\tAus\tArbeit (h)\tGesperrt 11–13h\tMinuten";
+ copy([head].concat(D.map(tsvRow)).join("\n"),e.currentTarget)
+});
+const rf=document.getElementById('cg-refresh');
+if(rf)rf.addEventListener('click',()=>{ if(window.chrome&&window.chrome.webview) window.chrome.webview.postMessage('refresh'); });
+document.getElementById('cg-export').addEventListener('click',()=>{
+ if(window.chrome&&window.chrome.webview){window.chrome.webview.postMessage('export');return;}
+ const blob=new Blob(["﻿"+csv()],{type:"text/csv;charset=utf-8"});
+ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download="cgv2-arbeitszeiten.csv";a.click();
+});
+</script>
+</body></html>
