@@ -1,0 +1,8 @@
+bin/
+obj/
+*.user
+publish/
+lock-log.json
+lock-log.json.bak
+*.bak
+.vs/
