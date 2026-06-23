@@ -13,6 +13,13 @@ body{margin:0;background:#0E1116;font-family:'IBM Plex Mono',ui-monospace,monosp
 .tb-btn{width:32px;height:26px;display:flex;align-items:center;justify-content:center;color:#9aa3b0;border-radius:6px;font-size:15px;cursor:pointer}
 .tb-btn:hover{background:#1b2230;color:#E6E9EE}
 .tb-btn.cl:hover{background:#E2685A;color:#0E1116}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-track{background:#0B0E13}
+::-webkit-scrollbar-thumb{background:#2a323d;border-radius:6px;border:2px solid #0B0E13}
+::-webkit-scrollbar-thumb:hover{background:#3a4452}
+::-webkit-scrollbar-corner{background:#0B0E13}
+.cg-grip{position:fixed;right:0;bottom:0;width:18px;height:18px;cursor:nwse-resize;z-index:30}
+.cg-grip::after{content:"";position:absolute;right:3px;bottom:3px;width:10px;height:10px;background:repeating-linear-gradient(135deg,#586271 0 1.5px,transparent 1.5px 4px)}
 .cg-body{padding:16px 18px 20px}
 .cg-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:14px;gap:12px;flex-wrap:wrap}
 .cg-h1{font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:18px;margin:0}
@@ -116,6 +123,7 @@ body{margin:0;background:#0E1116;font-family:'IBM Plex Mono',ui-monospace,monosp
   </div>
  </div>
 </div>
+<div class="cg-grip" id="cg-grip" title="Größe ändern"></div>
 <script>
 const D=/*__DATA__*/[];
 const RANGE=/*__RANGE__*/null;
@@ -222,6 +230,8 @@ document.getElementById('cg-apply').addEventListener('click',()=>{
  document.getElementById('tb-min').onclick=()=>post('min');
  document.getElementById('tb-max').onclick=()=>post('max');
  document.getElementById('tb-close').onclick=()=>post('close');
+ const grip=document.getElementById('cg-grip');
+ if(grip)grip.addEventListener('mousedown',e=>{if(e.button!==0)return;e.preventDefault();e.stopPropagation();post('resize:br')});
  const E=6;
  function dir(e){const w=innerWidth,h=innerHeight,x=e.clientX,y=e.clientY,l=x<=E,r=x>=w-E,t=y<=E,b=y>=h-E;if(t&&l)return'tl';if(t&&r)return'tr';if(b&&l)return'bl';if(b&&r)return'br';if(l)return'l';if(r)return'r';if(t)return't';if(b)return'b';return''}
  const cur={l:'ew-resize',r:'ew-resize',t:'ns-resize',b:'ns-resize',tl:'nwse-resize',br:'nwse-resize',tr:'nesw-resize',bl:'nesw-resize'};

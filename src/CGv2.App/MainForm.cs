@@ -33,6 +33,20 @@ public sealed class MainForm : Form
         get { var cp = base.CreateParams; cp.ClassStyle |= CS_DROPSHADOW; return cp; }
     }
 
+    [System.Runtime.InteropServices.DllImport("dwmapi.dll")]
+    private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int value, int size);
+
+    protected override void OnHandleCreated(EventArgs e)
+    {
+        base.OnHandleCreated(e);
+        try
+        {
+            int round = 2; // DWMWCP_ROUND — leichte Win11-Eckenrundung
+            DwmSetWindowAttribute(Handle, 33 /*DWMWA_WINDOW_CORNER_PREFERENCE*/, ref round, sizeof(int));
+        }
+        catch { }
+    }
+
     private async Task InitAsync()
     {
         try
