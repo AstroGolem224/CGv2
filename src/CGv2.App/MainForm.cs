@@ -1,3 +1,4 @@
+using System.Drawing;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Web.WebView2.WinForms;
@@ -16,12 +17,20 @@ public sealed class MainForm : Form
     {
         _store = store;
         Text = "CGv2 — Activity Ledger";
-        Width = 840;
-        Height = 660;
+        FormBorderStyle = FormBorderStyle.None;
         StartPosition = FormStartPosition.CenterScreen;
-        BackColor = System.Drawing.Color.FromArgb(14, 17, 22);
+        ClientSize = new Size(860, 680);
+        MinimumSize = new Size(560, 360);
+        BackColor = Color.FromArgb(14, 17, 22);
+        Icon = LoadAppIcon();
         Controls.Add(_web);
         Load += async (_, _) => await InitAsync();
+    }
+
+    private const int CS_DROPSHADOW = 0x20000;
+    protected override CreateParams CreateParams
+    {
+        get { var cp = base.CreateParams; cp.ClassStyle |= CS_DROPSHADOW; return cp; }
     }
 
     private async Task InitAsync()
@@ -32,9 +41,19 @@ public sealed class MainForm : Form
             _web.CoreWebView2.WebMessageReceived += (_, e) =>
             {
                 var msg = e.TryGetWebMessageAsString();
-                if (msg == "export") ExportCsv();
-                else if (msg != null && msg.StartsWith("range:")) ApplyRange(msg);
-                else Render();
+                switch (msg)
+                {
+                    case "min": WindowState = FormWindowState.Minimized; break;
+                    case "max": ToggleMax(); break;
+                    case "close": Close(); break;
+                    case "drag": NcDrag(HTCAPTION); break;
+                    case "export": ExportCsv(); break;
+                    default:
+                        if (msg != null && msg.StartsWith("range:")) ApplyRange(msg);
+                        else if (msg != null && msg.StartsWith("resize:")) StartResize(msg);
+                        else Render();
+                        break;
+                }
             };
             Render();
         }
@@ -111,6 +130,47 @@ public sealed class MainForm : Form
         };
         if (dlg.ShowDialog(this) != DialogResult.OK) return;
         File.WriteAllText(dlg.FileName, CsvBuilder.Build(BuildRows()), new UTF8Encoding(true));
+    }
+
+    // --- Custom window chrome (frameless): drag / resize / min / max via native hit-test ---
+
+    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    private static extern bool ReleaseCapture();
+    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    private static extern int SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
+    private const int WM_NCLBUTTONDOWN = 0xA1, HTCAPTION = 2;
+
+    private void NcDrag(int hit)
+    {
+        ReleaseCapture();
+        SendMessage(Handle, WM_NCLBUTTONDOWN, hit, 0);
+    }
+
+    private void StartResize(string msg)
+    {
+        int ht = msg switch
+        {
+            "resize:l" => 10, "resize:r" => 11, "resize:t" => 12, "resize:tl" => 13,
+            "resize:tr" => 14, "resize:b" => 15, "resize:bl" => 16, "resize:br" => 17, _ => 0
+        };
+        if (ht != 0) NcDrag(ht);
+    }
+
+    private void ToggleMax()
+    {
+        if (WindowState == FormWindowState.Maximized)
+            WindowState = FormWindowState.Normal;
+        else
+        {
+            MaximizedBounds = Screen.FromHandle(Handle).WorkingArea;
+            WindowState = FormWindowState.Maximized;
+        }
+    }
+
+    internal static Icon LoadAppIcon()
+    {
+        using var s = typeof(MainForm).Assembly.GetManifestResourceStream("CGv2.App.app.ico");
+        return s != null ? new Icon(s) : SystemIcons.Application;
     }
 
     private static string LoadTemplate()

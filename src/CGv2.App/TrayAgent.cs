@@ -26,7 +26,7 @@ public sealed class TrayAgent : IDisposable
 
         _icon = new NotifyIcon
         {
-            Icon = System.Drawing.SystemIcons.Application,
+            Icon = MainForm.LoadAppIcon(),
             Text = "CGv2 — Activity Ledger",
             Visible = true,
             ContextMenuStrip = menu

@@ -6,7 +6,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600&family=IBM+Plex+Mono:wght@400;500&display=swap');
 body{margin:0;background:#0E1116;font-family:'IBM Plex Mono',ui-monospace,monospace}
 .cg-wrap{width:100%;max-width:none}
-.cg-win{background:#0E1116;overflow:hidden;color:#E6E9EE}
+.cg-win{background:#0E1116;color:#E6E9EE}
+.cg-bar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:9px;height:38px;background:#0A0D11;border-bottom:1px solid #1c232c;padding:0 6px 0 12px;user-select:none}
+.cg-bt{font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:13px}
+.cg-btag{font-size:11px;color:#7c8694}
+.tb-btn{width:32px;height:26px;display:flex;align-items:center;justify-content:center;color:#9aa3b0;border-radius:6px;font-size:15px;cursor:pointer}
+.tb-btn:hover{background:#1b2230;color:#E6E9EE}
+.tb-btn.cl:hover{background:#E2685A;color:#0E1116}
 .cg-body{padding:16px 18px 20px}
 .cg-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:14px;gap:12px;flex-wrap:wrap}
 .cg-h1{font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:18px;margin:0}
@@ -52,6 +58,20 @@ body{margin:0;background:#0E1116;font-family:'IBM Plex Mono',ui-monospace,monosp
 <body>
 <div class="cg-wrap">
  <div class="cg-win">
+  <div class="cg-bar" id="cg-bar">
+   <svg width="17" height="17" viewBox="0 0 256 256" aria-hidden="true" style="flex:none">
+    <rect x="6" y="6" width="244" height="244" rx="52" fill="#14181F" stroke="#2a323d" stroke-width="6"/>
+    <circle cx="128" cy="128" r="82" fill="#0E1116" stroke="#F4A23C" stroke-width="20"/>
+    <line x1="128" y1="128" x2="96" y2="90" stroke="#E6E9EE" stroke-width="16" stroke-linecap="round"/>
+    <line x1="128" y1="128" x2="174" y2="106" stroke="#F4A23C" stroke-width="16" stroke-linecap="round"/>
+    <circle cx="128" cy="128" r="15" fill="#E6E9EE"/>
+   </svg>
+   <span class="cg-bt">CGv2</span><span class="cg-btag">· Activity Ledger</span>
+   <span style="flex:1"></span>
+   <span class="tb-btn" id="tb-min" title="Minimieren"><i class="ti ti-minus"></i></span>
+   <span class="tb-btn" id="tb-max" title="Maximieren"><i class="ti ti-square"></i></span>
+   <span class="tb-btn cl" id="tb-close" title="In Tray schließen"><i class="ti ti-x"></i></span>
+  </div>
   <div class="cg-body">
    <div class="cg-head">
     <div>
@@ -195,6 +215,20 @@ document.getElementById('cg-apply').addEventListener('click',()=>{
  document.getElementById('m-work').textContent=avgW!=null?avgW.toFixed(1).replace('.',','):'–';
  document.getElementById('m-pause').textContent=(avgP!=null?avgP:'–')+' min';
  document.getElementById('m-days').textContent=D.filter(r=>r.data).length+' / '+D.length;
+})();
+(function(){
+ const bar=document.getElementById('cg-bar');
+ const post=m=>{if(window.chrome&&window.chrome.webview)window.chrome.webview.postMessage(m)};
+ document.getElementById('tb-min').onclick=()=>post('min');
+ document.getElementById('tb-max').onclick=()=>post('max');
+ document.getElementById('tb-close').onclick=()=>post('close');
+ const E=6;
+ function dir(e){const w=innerWidth,h=innerHeight,x=e.clientX,y=e.clientY,l=x<=E,r=x>=w-E,t=y<=E,b=y>=h-E;if(t&&l)return'tl';if(t&&r)return'tr';if(b&&l)return'bl';if(b&&r)return'br';if(l)return'l';if(r)return'r';if(t)return't';if(b)return'b';return''}
+ const cur={l:'ew-resize',r:'ew-resize',t:'ns-resize',b:'ns-resize',tl:'nwse-resize',br:'nwse-resize',tr:'nesw-resize',bl:'nesw-resize'};
+ addEventListener('mousemove',e=>{document.body.style.cursor=cur[dir(e)]||''});
+ addEventListener('mousedown',e=>{if(e.button!==0)return;const d=dir(e);if(d)post('resize:'+d)});
+ bar.addEventListener('mousedown',e=>{if(e.button!==0||dir(e)||e.target.closest('.tb-btn'))return;post('drag')});
+ bar.addEventListener('dblclick',e=>{if(e.target.closest('.tb-btn'))return;post('max')});
 })();
 </script>
 </body></html>

@@ -10,6 +10,7 @@
     <AssemblyName>CGv2</AssemblyName>
     <RootNamespace>CGv2.App</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>app.ico</ApplicationIcon>
     <SelfContained>true</SelfContained>
   </PropertyGroup>
   <ItemGroup>
@@ -20,5 +21,6 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="web\index.html" />
+    <EmbeddedResource Include="app.ico" />
   </ItemGroup>
 </Project>
