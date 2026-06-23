@@ -36,8 +36,11 @@ body{margin:0;background:#0E1116;font-family:'IBM Plex Mono',ui-monospace,monosp
 .cg-work{font-size:13px;color:#5BD08A}
 .cg-muted{color:#586271}
 .cg-track{position:relative;height:22px;background:#0B0E13;border:1px solid #1c232c;border-radius:5px;overflow:hidden;margin-right:12px}
-.cg-bar-active{position:absolute;top:3px;bottom:3px;background:#F4A23C;border-radius:2px}
-.cg-gap{position:absolute;top:0;bottom:0;background:#0B0E13;border-left:1px solid #2a323d;border-right:1px solid #2a323d}
+.cg-bar-active{position:absolute;top:7px;bottom:7px;background:#F4A23C;border-radius:2px}
+.cg-gap{position:absolute;top:0;bottom:0;background:#0B0E13;border-left:1px solid #6e7886;border-right:1px solid #6e7886}
+.cg-tick{position:absolute;top:0;width:1px;height:5px;background:#cdd3db}
+.cg-onoff{position:relative;height:13px;margin-right:12px;margin-top:2px}
+.cg-onoff .lab{position:absolute;font-size:11px;white-space:nowrap}
 .cg-note{font-size:11px;color:#586271;line-height:22px;padding-left:8px}
 .cg-sum{font-size:13px;text-align:right;padding-right:4px}
 .cg-copy{display:flex;align-items:center;justify-content:center;color:#5b6573;cursor:pointer;font-size:15px}
@@ -103,6 +106,11 @@ aS=Math.floor(aS/60)*60;aE=Math.ceil(aE/60)*60;
 if(aE<=aS)aE=aS+60;
 const aSpan=aE-aS;
 const pct=m=>(m-aS)/aSpan*100;
+(function(){
+ const p15=15/aSpan*100,p60=60/aSpan*100;
+ const g='repeating-linear-gradient(90deg,transparent 0,transparent calc('+p15+'% - 1px),rgba(255,255,255,.05) calc('+p15+'% - 1px),rgba(255,255,255,.05) '+p15+'%),repeating-linear-gradient(90deg,transparent 0,transparent calc('+p60+'% - 1px),rgba(255,255,255,.13) calc('+p60+'% - 1px),rgba(255,255,255,.13) '+p60+'%)';
+ const st=document.createElement('style');st.textContent='.cg-track{background-image:'+g+'}';document.head.appendChild(st);
+})();
 function timeCell(v,color){
  if(v===null||v===undefined||v==="aus")return '<div class="cg-time cg-muted">'+(v==="aus"?"aus":"—")+'</div>';
  if(v==="läuft")return '<div class="cg-time" style="color:#F4A23C">läuft</div>';
@@ -112,13 +120,16 @@ function workCell(r){
  if(!r.work)return '<div class="cg-work cg-muted">—</div>';
  return '<div class="cg-work">'+r.work+' <span class="cg-muted" style="font-size:11px">h</span></div>';
 }
+function hm(m){return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0')}
 function track(r){
  if(r.pcoff)return '<div class="cg-track"><div class="cg-note">PC aus</div></div>';
  if(r.bs==null||r.be==null)return '<div class="cg-track"><div class="cg-note">keine Daten</div></div>';
  let l=pct(r.bs),w=pct(r.be)-pct(r.bs);
  let bar='<div class="cg-bar-active" style="left:'+l+'%;width:'+w+'%"></div>';
- let gaps=(r.gaps||[]).map(g=>{let gl=pct(g[0]),gw=pct(g[1])-pct(g[0]);return '<div class="cg-gap" style="left:'+gl+'%;width:'+gw+'%" title="Pause"></div>'}).join("");
- return '<div class="cg-track">'+bar+gaps+'</div>';
+ let gaps=(r.gaps||[]).map(g=>{let gl=pct(g[0]),gw=pct(g[1])-pct(g[0]);return '<div class="cg-gap" style="left:'+gl+'%;width:'+gw+'%" title="Pause '+hm(g[0])+'–'+hm(g[1])+'"></div>'}).join("");
+ let ticks='<div class="cg-tick" style="left:'+pct(r.bs)+'%"></div><div class="cg-tick" style="left:'+pct(r.be)+'%"></div>';
+ let onoff='<div class="cg-onoff"><span class="lab" style="left:'+pct(r.bs)+'%;color:#5BD08A">'+hm(r.bs)+'</span><span class="lab" style="left:'+pct(r.be)+'%;transform:translateX(-100%);color:#E2685A">'+hm(r.be)+'</span></div>';
+ return '<div><div class="cg-track">'+bar+gaps+ticks+'</div>'+onoff+'</div>';
 }
 document.getElementById('cg-rows').innerHTML=D.map((r,i)=>(
  '<div class="cg-grid cg-row'+(r.data?'':' dim')+'">'+
